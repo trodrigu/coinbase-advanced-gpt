@@ -6,6 +6,7 @@ from app import app, client
 
 class TestGetTimeRoute(FlaskTestCase):
     @patch.object(client, 'get_unix_time')
+    @patch.object(client, 'get_unix_time')
     def test_get_time(self, mock_get_unix_time):
         # Mock the get_unix_time method to return a predefined server time
         mock_get_unix_time.return_value = 1634567890
