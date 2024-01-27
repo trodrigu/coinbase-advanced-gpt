@@ -1,10 +1,10 @@
-import unittest
-from unittest.mock import patch
+import unittest, FlaskTestCase
+from unittest.mock import patch, client
 
 from app import app, client
 
 
-class TestApp(unittest.TestCase):
+class TestGetTimeRoute(FlaskTestCase):
     @patch.object(client, 'get_unix_time')
     def test_get_time(self, mock_get_unix_time):
         # Mock the get_unix_time method to return a predefined server time
