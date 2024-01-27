@@ -42,6 +42,14 @@ def get_product():
 
 # Additional routes for other functionalities...
 
+@app.route('/get_time', methods=['GET'])
+def get_time():
+    try:
+        server_time = client.get_unix_time()
+        return jsonify(server_time), 200
+    except HTTPError as e:
+        return jsonify(error=str(e)), 400
+
 if __name__ == '__main__':
     app.run(debug=True)
 
