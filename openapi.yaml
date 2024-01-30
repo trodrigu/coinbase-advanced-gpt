@@ -1,29 +1,55 @@
 openapi: 3.0.1
 info:
-  title: TODO Plugin
-  description: A plugin that allows the user to create and manage a TODO list using ChatGPT. If you do not know the user's username, ask them first before making queries to the plugin. Otherwise, use the username "global".
-  version: '1.0.0'
+  title: Coinbase Advanced API plugin
+  description: Allows usage of Coinbase python SDK
+  version: '0.0.1'
 servers:
   - url: http://localhost:5003
 paths:
-  /todos/{username}:
+  /get_time:
     get:
-      operationId: getTodos
-      summary: Get the list of todos
-      parameters:
-        - in: path
-          name: username
-          schema:
-            type: string
-          required: true
-          description: The name of the user.
+      operationId: getTime
+      summary: Get the time
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/getTodosResponse'
+                $ref: '#/components/schemas/getTimeResponse'
+  /get_accounts:
+    get:
+      operationId: getAccounts
+      summary: Get the list of accounts
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getAccountsResponse'
+  /get_product:
+    get:
+      operationId: getProduct
+      summary: Gets the product for an id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getProductResponse'
+  /get_products:
+    get:
+      operationId: getProducts
+      summary: Gets products
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getProductsResponse'
     post:
       operationId: addTodo
       summary: Add a todo to the list
@@ -64,14 +90,201 @@ paths:
           description: OK
 components:
   schemas:
-    getTodosResponse:
+    getTimeResponse:
+      type: object
+      description: Gets time
+      properties:
+        epochMillis:
+          type: string
+        epochSeconds:
+          type: string
+        iso:
+          type: string
+    getAccountsResponse:
+      type: object
+      description: List of accounts
+      properties:
+        accounts:
+          type: array
+          items: 
+            type: object
+            properties:
+              active:
+                type: boolean
+              available_balance:
+                type: object
+                properties:
+                  currency:
+                    type: string
+                  value: 
+                    type: string
+              created_at:
+                type: string
+              currency:
+                type: string
+              default:
+                type: boolean
+              deleted_at:
+                type: string
+              hold:
+                type: object
+                properties:
+                  currency:
+                    type: string
+                  value: 
+                    type: string
+              name:
+                type: string
+              ready:
+                type: boolean
+              type:
+                type: string
+              updated_at:
+                type: string
+              uuid:
+                type: string
+    getProductResponse:
+      type: object
+      description: Product
+      properties:
+        auction_mode:
+          type: boolean
+        base_currency_id:
+          type: string
+        base_display_symbol:
+          type: string
+        base_increment:
+          type: string
+        base_max_size:
+          type: string
+        base_min_size:
+          type: string
+        base_name:
+          type: string
+        cancel_only:
+          type: string
+        display_name:
+          type: string
+        fcm_trading_session_details:
+          type: string
+        is_disabled:
+          type: boolean
+        limit_only:
+          type: boolean
+        mid_market_price:
+          type: string
+        new:
+          type: boolean
+        post_only:
+          type: boolean
+        price:
+          type: string
+        price_increment:
+          type: string
+        price_percentage_change_24h:
+          type: string
+        product_id:
+          type: string
+        product_type:
+          type: string
+        quote_currency_id:
+          type: string
+        quote_display_symbol:
+          type: string
+        quote_increment:
+          type: string
+        quote_max_size:
+          type: string
+        quote_min_size:
+          type: string
+        quote_name:
+          type: string
+        status:
+          type: string
+        trading_disabled:
+          type: boolean
+        view_only:
+          type: boolean
+        volume_24h:
+          type: string
+        volume_percentage_change_24h:
+          type: string
+        watched:
+          type: boolean
+    getProductsResponse:
       type: object
       properties:
-        todos:
+        num_products:
+          type: integer
+        products:
           type: array
           items:
-            type: string
-          description: The list of todos.
+            type: object
+            properties:
+              auction_mode:
+                type: boolean
+              base_currency_id:
+                type: string
+              base_display_symbol:
+                type: string
+              base_increment:
+                type: string
+              base_max_size:
+                type: string
+              base_min_size:
+                type: string
+              base_name:
+                type: string
+              cancel_only:
+                type: string
+              display_name:
+                type: string
+              fcm_trading_session_details:
+                type: string
+              is_disabled:
+                type: boolean
+              limit_only:
+                type: boolean
+              mid_market_price:
+                type: string
+              new:
+                type: boolean
+              post_only:
+                type: boolean
+              price:
+                type: string
+              price_increment:
+                type: string
+              price_percentage_change_24h:
+                type: string
+              product_id:
+                type: string
+              product_type:
+                type: string
+              quote_currency_id:
+                type: string
+              quote_display_symbol:
+                type: string
+              quote_increment:
+                type: string
+              quote_max_size:
+                type: string
+              quote_min_size:
+                type: string
+              quote_name:
+                type: string
+              status:
+                type: string
+              trading_disabled:
+                type: boolean
+              view_only:
+                type: boolean
+              volume_24h:
+                type: string
+              volume_percentage_change_24h:
+                type: string
+              watched:
+                type: boolean
     addTodoRequest:
       type: object
       properties:
