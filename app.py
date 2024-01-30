@@ -33,16 +33,22 @@ async def create_order():
     except HTTPError as e:
         return jsonify(error=str(e)), 400
 
-@app.route('/get_product', methods=['GET'])
-async def get_product():
+@app.route('/get_products', methods=['GET'])
+def get_products():
     try:
-        product_id = request.args.get('product_id')
+        accounts = client.get_products()
+        return jsonify(accounts), 200
+    except HTTPError as e:
+        return jsonify(error=str(e)), 400
+
+@app.route('/get_product/<string:product_id>', methods=['GET'])
+async def get_product(product_id):
+    try:
         product = client.get_product(product_id=product_id)
         return jsonify(product), 200
     except HTTPError as e:
         return jsonify(error=str(e)), 400
 
-# Additional routes for other functionalities...
 
 @app.route('/get_time', methods=['GET'])
 async def get_time():
@@ -53,5 +59,5 @@ async def get_time():
         return jsonify(error=str(e)), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=True)
+    app.run(debug=True, host="0.0.0.0", port=5003, use_reloader=True)
 
