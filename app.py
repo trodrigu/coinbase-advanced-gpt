@@ -32,6 +32,14 @@ async def create_order():
     """
     Handles the creation of a market order to buy a cryptocurrency.
     """
+
+    """
+    Handles the creation of a market order to buy a cryptocurrency.
+    """
+
+    """
+    Handles the creation of a market order to buy a cryptocurrency.
+    """
     try:
         data = await request.get_json()
         order = client.market_order_buy(client_order_id=data.get("client_order_id"), 
