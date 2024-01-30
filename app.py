@@ -74,6 +74,10 @@ async def get_time():
     """
     Retrieves the current server time from the Coinbase API.
     """
+
+    """
+    Retrieves the current server time from the Coinbase API.
+    """
     try:
         server_time = client.get_unix_time()
         return jsonify(server_time), 200
