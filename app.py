@@ -7,6 +7,10 @@ import os
 
 app = cors(Quart(__name__), allow_origin="*")
 
+"""
+This file contains the main application logic for interacting with the Coinbase API.
+"""
+
 # Load API keys from environment variables or replace with your keys for testing
 api_key = os.getenv('COINBASE_API_KEY', 'your_api_key')
 api_secret = os.getenv('COINBASE_API_SECRET', 'your_api_secret')
@@ -24,6 +28,10 @@ def get_accounts():
 
 @app.route('/create_order', methods=['POST'])
 async def create_order():
+
+    """
+    Handles the creation of a market order to buy a cryptocurrency.
+    """
     try:
         data = await request.get_json()
         order = client.market_order_buy(client_order_id=data.get("client_order_id"), 
@@ -35,6 +43,10 @@ async def create_order():
 
 @app.route('/get_product', methods=['GET'])
 async def get_product():
+
+    """
+    Retrieves information about a specific product.
+    """
     try:
         product_id = request.args.get('product_id')
         product = client.get_product(product_id=product_id)
@@ -46,6 +58,10 @@ async def get_product():
 
 @app.route('/get_time', methods=['GET'])
 async def get_time():
+
+    """
+    Retrieves the current server time from the Coinbase API.
+    """
     try:
         server_time = client.get_unix_time()
         return jsonify(server_time), 200
