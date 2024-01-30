@@ -55,6 +55,10 @@ async def get_product():
     """
     Retrieves information about a specific product.
     """
+
+    """
+    Retrieves information about a specific product.
+    """
     try:
         product_id = request.args.get('product_id')
         product = client.get_product(product_id=product_id)
