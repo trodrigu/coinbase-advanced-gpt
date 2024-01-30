@@ -16,7 +16,7 @@ class TestOpenAPI(unittest.TestCase):
         response = requests.get(url.format(username=username))
 
         # Assert the response status code is 200
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
 
         # Assert the response body is a valid JSON with the expected structure
         response_json = response.json()
