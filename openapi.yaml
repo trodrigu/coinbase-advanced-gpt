@@ -50,41 +50,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/getProductsResponse'
+  /create_order:
     post:
-      operationId: addTodo
-      summary: Add a todo to the list
+      operationId: createOrder
+      summary: Create a new market or limit order
       parameters:
-        - in: path
-          name: username
-          schema:
-            type: string
-          required: true
-          description: The name of the user.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/addTodoRequest'
+              $ref: '#/components/schemas/createOrderRequest'
       responses:
         '200':
           description: OK
+  /orders/{orderId}:
     delete:
-      operationId: deleteTodo
-      summary: Delete a todo from the list
+      operationId: cancelOrder
+      summary: Cancel an open order
       parameters:
         - in: path
-          name: username
+          name: orderId
           schema:
             type: string
           required: true
-          description: The name of the user.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/deleteTodoRequest'
+          description: The id of the order.
       responses:
         '200':
           description: OK
@@ -285,17 +275,16 @@ components:
                 type: string
               watched:
                 type: boolean
-    addTodoRequest:
+    createOrderRequest:
       type: object
       properties:
-        todo:
+        clientOrderId:
           type: string
-          description: The todo to add to the list.
-          required: true
-    deleteTodoRequest:
-      type: object
-      properties:
-        todo_idx:
-          type: integer
-          description: The index of the todo to delete.
-          required: true
+        productId:
+          type: string
+        quoteSize:
+          type: string
+        baseSize:
+          type: string
+        limitPrice:
+          type: string
