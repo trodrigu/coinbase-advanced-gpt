@@ -1,69 +1,130 @@
 openapi: 3.0.1
 info:
   title: Coinbase Advanced API plugin
-  description: Allows usage of Coinbase python SDK
-  version: '0.0.1'
+  description: Allows usage of Coinbase API
+  version: 0.0.1
 servers:
-  - url: PLUGIN_HOSTNAME
+  - url: https://api.coinbase.com
 paths:
-  /get_time:
-    get:
-      operationId: getTime
-      summary: Get the time
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/getTimeResponse'
-  /get_accounts:
+  /api/v3/brokerage/accounts:
     get:
       operationId: getAccounts
       summary: Get the list of accounts
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/getAccountsResponse'
-  /get_product:
+                $ref: "#/components/schemas/getAccountsResponse"
+  /api/v3/brokerage/accounts/{accountId}:
     get:
-      operationId: getProduct
-      summary: Gets the product for an id
+      operationId: getAccount
+      summary: Get a account
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            type: string
+          required: true
+          description: The id of the account.
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/getProductResponse'
-  /get_products:
-    get:
-      operationId: getProducts
-      summary: Gets products
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/getProductsResponse'
-  /create_order:
+                $ref: "#/components/schemas/getAccountResponse"
+  /api/v3/brokerage/orders:
     post:
       operationId: createOrder
       summary: Create a new market or limit order
-      parameters:
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/createOrderRequest'
+              $ref: "#/components/schemas/createOrderRequest"
       responses:
-        '200':
+        "200":
           description: OK
+  /api/v3/brokerage/orders/batch_cancel:
+    post:
+      operationId: createOrder
+      summary: Batch cancel orders
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/batchCancelOrderRequest"
+      responses:
+        "200":
+          description: OK
+  /api/v3/brokerage/orders/historical/batch:
+    get:
+      operationId: listOrders
+      summary: List orders
+      parameters:
+        - in: query
+          name: product_id
+          schema:
+            type: integer
+        - in: query
+          name: order_status
+          schema:
+            type: array
+            items:
+              type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: start_date
+          schema:
+            type: string
+        - in: query
+          name: end_date
+          schema:
+            type: string
+        - in: query
+          name: order_type
+          schema:
+            type: string
+        - in: query
+          name: order_side
+          schema:
+            type: string
+        - in: query
+          name: product_type
+          schema:
+            type: string
+        - in: query
+          name: order_placement_source
+          schema:
+            type: string
+        - in: query
+          name: contract_expiry_type
+          schema:
+            type: string
+        - in: query
+          name: asset_filters
+          schema:
+            type: array
+            items:
+              type: string
+        - in: query
+          name: retail_portfolio_id
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getOrdersResponse"
   /orders/{orderId}:
     delete:
       operationId: cancelOrder
@@ -76,27 +137,51 @@ paths:
           required: true
           description: The id of the order.
       responses:
-        '200':
+        "200":
           description: OK
+  /api/v3/brokerage/products/{productId}:
+    get:
+      operationId: getProduct
+      summary: Gets the product for an id
+      parameters:
+        - in: path
+          name: productId
+          schema:
+            type: string
+          required: true
+          description: The id of the order.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getProductResponse"
+  /api/v3/brokerage/products:
+    get:
+      operationId: getProducts
+      summary: Gets products
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getProductsResponse"
 components:
   schemas:
-    getTimeResponse:
-      type: object
-      description: Gets time
-      properties:
-        epochMillis:
-          type: string
-        epochSeconds:
-          type: string
-        iso:
-          type: string
     getAccountsResponse:
       type: object
       description: List of accounts
       properties:
         accounts:
           type: array
-          items: 
+          items:
             type: object
             properties:
               active:
@@ -106,7 +191,7 @@ components:
                 properties:
                   currency:
                     type: string
-                  value: 
+                  value:
                     type: string
               created_at:
                 type: string
@@ -121,7 +206,7 @@ components:
                 properties:
                   currency:
                     type: string
-                  value: 
+                  value:
                     type: string
               name:
                 type: string
@@ -133,6 +218,44 @@ components:
                 type: string
               uuid:
                 type: string
+    getAccountResponse:
+      type: object
+      description: Account
+      properties:
+        active:
+          type: boolean
+        available_balance:
+          type: object
+          properties:
+            currency:
+              type: string
+            value:
+              type: string
+        created_at:
+          type: string
+        currency:
+          type: string
+        default:
+          type: boolean
+        deleted_at:
+          type: string
+        hold:
+          type: object
+          properties:
+            currency:
+              type: string
+            value:
+              type: string
+        name:
+          type: string
+        ready:
+          type: boolean
+        type:
+          type: string
+        updated_at:
+          type: string
+        uuid:
+          type: string
     getProductResponse:
       type: object
       description: Product
@@ -278,13 +401,92 @@ components:
     createOrderRequest:
       type: object
       properties:
-        clientOrderId:
+        client_order_id:
           type: string
-        productId:
+          required: true
+        product_id:
           type: string
-        quoteSize:
+        side:
           type: string
-        baseSize:
+        order_configuration:
+          type: object
+          properties:
+            market_market_ioc:
+              type: object
+              properties:
+                quote_size:
+                  type: string
+                base_size:
+                  type: string
+            limit_limit_gtc:
+              type: object
+              properties:
+                base_size:
+                  type: string
+                limit_price:
+                  type: string
+                post_only:
+                  type: string
+            limit_limit_gtd:
+              type: object
+              properties:
+                base_size:
+                  type: string
+                limit_price:
+                  type: string
+                end_time:
+                  type: string
+                post_only:
+                  type: boolean
+            stop_limit_stop_limit_gtc:
+              type: object
+              properties:
+                base_size:
+                  type: string
+                limit_price:
+                  type: string
+                stop_price:
+                  type: string
+                stop_direction:
+                  type: string
+            stop_limit_stop_limit_gtd:
+              type: object
+              properties:
+                base_size:
+                  type: string
+                limit_price:
+                  type: string
+                stop_price:
+                  type: string
+                end_time:
+                  type: string
+                stop_direction:
+                  type: string
+        self_trade_prevention_id:
+          type: string
+        leverage:
+          type: string
+        margin_type:
+          type: string
+        retail_portfolio_id:
           type: string
         limitPrice:
           type: string
+    getOrdersResponse:
+      orders:
+        type: array
+        items:
+          type: object
+          properties:
+            order_id:
+              type: integer
+            product_id:
+              type: integer
+    batchCancelOrderRequest:
+      type: object
+      properties:
+        order_ids:
+          type: array
+          items:
+            type: string
+
