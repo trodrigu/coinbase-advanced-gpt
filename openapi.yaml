@@ -8,7 +8,7 @@ servers:
 paths:
   /api/v3/brokerage/accounts:
     get:
-      operationId: getAccounts
+      operationId: listAccounts
       summary: Get the list of accounts
       responses:
         "200":
@@ -125,54 +125,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/getOrdersResponse"
-  /orders/{orderId}:
-    delete:
-      operationId: cancelOrder
-      summary: Cancel an open order
-      parameters:
-        - in: path
-          name: orderId
-          schema:
-            type: string
-          required: true
-          description: The id of the order.
-      responses:
-        "200":
-          description: OK
-  /api/v3/brokerage/products/{productId}:
-    get:
-      operationId: getProduct
-      summary: Gets the product for an id
-      parameters:
-        - in: path
-          name: productId
-          schema:
-            type: string
-          required: true
-          description: The id of the order.
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/getProductResponse"
-  /api/v3/brokerage/products:
-    get:
-      operationId: getProducts
-      summary: Gets products
-      parameters:
-        - in: query
-          name: limit
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/getProductsResponse"
   /api/v3/brokerage/orders/historical/fills:
     get:
       operationId: getFills
@@ -209,6 +161,61 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/getFillsResponse"
+  /api/v3/orders/historical/{order_id}:
+    get:
+      operationId: getOrder
+      summary: Get a single order by order ID.
+      parameters:
+        - in: query
+          name: order_id
+          schema:
+            type: string
+        - in: query
+          name: client_order_id
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getOrderResponse"
+
+  /api/v3/brokerage/products/{productId}:
+    get:
+      operationId: getProduct
+      summary: Gets the product for an id
+      parameters:
+        - in: path
+          name: productId
+          schema:
+            type: string
+          required: true
+          description: The id of the order.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getProductResponse"
+  /api/v3/brokerage/products:
+    get:
+      operationId: getProducts
+      summary: Gets products
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getProductsResponse"
 components:
   schemas:
     getFillsResponse:
@@ -549,15 +556,149 @@ components:
         limitPrice:
           type: string
     getOrdersResponse:
-      orders:
-        type: array
-        items:
+      type: object
+      properties:
+        orders:
+          type: array
+          items:
+            type: object
+            properties:
+              order_id:
+                type: integer
+              product_id:
+                type: integer
+
+    getOrderResponse:
+      type: object
+      summary: Get a single order by order ID.
+      properties:
+        order:
           type: object
           properties:
             order_id:
-              type: integer
+              type: string
             product_id:
-              type: integer
+              type: string
+            user_id:
+              type: string
+            order_configuration:
+              type: object
+              properties:
+                market_market_ioc:
+                  type: object
+                  properties:
+                    quote_size:
+                      type: string
+                    base_size:
+                      type: string
+                limit_limit_gtc:
+                  type: object
+                  properties:
+                    base_size:
+                      type: string
+                    limit_price:
+                      type: string
+                    post_only:
+                      type: boolean
+                limit_limit_gtd:
+                  type: object
+                  properties:
+                    base_size:
+                      type: string
+                    limit_price:
+                      type: string
+                    end_time:
+                      type: string # Assuming RFC3339 Timestamp format
+                    post_only:
+                      type: boolean
+                stop_limit_stop_limit_gtc:
+                  type: object
+                  properties:
+                    base_size:
+                      type: string
+                    limit_price:
+                      type: string
+                    stop_price:
+                      type: string
+                    stop_direction:
+                      type: string
+                stop_limit_stop_limit_gtd:
+                  type: object
+                  properties:
+                    base_size:
+                      type: string
+                    limit_price:
+                      type: string
+                    stop_price:
+                      type: string
+                    end_time:
+                      type: string # Assuming RFC3339 Timestamp format
+                    stop_direction:
+                      type: string
+                    side:
+                      type: string
+                    client_order_id:
+                      type: string
+                    status:
+                      type: string
+                    time_in_force:
+                      type: string
+                    created_time:
+                      type: string
+                    completion_percentage:
+                      type: string
+                    filled_size:
+                      type: string
+                    average_filled_price:
+                      type: string
+                    number_of_fills:
+                      type: string
+                    filled_value:
+                      type: string
+                    pending_cancel:
+                      type: boolean
+                    size_in_quote:
+                      type: boolean
+                    total_fees:
+                      type: string
+                    size_inclusive_of_fees:
+                      type: boolean
+                    total_value_after_fees:
+                      type: string
+                    trigger_status:
+                      type: string
+                    order_type:
+                      type: string
+                    reject_reason:
+                      type: string
+                    settled:
+                      type: boolean
+                    product_type:
+                      type: string
+                    reject_message:
+                      type: string
+                    cancel_message:
+                      type: string
+                    order_placement_source:
+                      type: string
+                    outstanding_hold_amount:
+                      type: string
+                    is_liquidation:
+                      type: boolean
+                    last_fill_time:
+                      type: string
+                    edit_history:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          price:
+                            type: string
+                          size:
+                            type: string
+                          replace_accept_timestamp:
+                            type: string
+
     batchCancelOrderRequest:
       type: object
       properties:
