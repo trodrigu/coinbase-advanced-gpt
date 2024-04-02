@@ -48,6 +48,49 @@ paths:
       responses:
         "200":
           description: OK
+  /api/v3/brokerage/orders/edit:
+    post:
+      operationId: editOrder
+      summary: Edit an order's size (quantity), or price. Only good-till-cancelled (GTC) Limit Orders can be edited.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/editOrderRequest"
+      responses:
+        "200":
+          description: OK
+  /api/v3/brokerage/orders/edit_preview:
+    post:
+      operationId: editPreview
+      summary: Simulate an edit order request with a specified new size, or new price, to preview the result
+      parameters:
+        - in: query
+          name: order_id
+          schema:
+            type: string
+          description: The id of the account
+        - in: query
+          name: price
+          schema:
+            type: string
+          description: New price for order
+        - in: query
+          name: size
+          schema:
+            type: string
+          description: New size for order
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/editOrderPreviewResponse"
+      responses:
+        "200":
+          description: OK
   /api/v3/brokerage/orders/batch_cancel:
     post:
       operationId: batchCancelOrders
@@ -181,7 +224,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/getOrderResponse"
-
   /api/v3/brokerage/products/{productId}:
     get:
       operationId: getProduct
@@ -207,6 +249,7 @@ paths:
       parameters:
         - in: query
           name: limit
+          description: Use a default of 100
           schema:
             type: integer
       responses:
@@ -216,8 +259,648 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/getProductsResponse"
+  /api/v3/brokerage/products/{productId}/candles:
+    get:
+      operationId: getProductCandles
+      summary: Get rates for a single product by product ID, grouped in buckets.  Timestamps are UNIX timestamps.
+      parameters:
+        - in: path
+          name: productId
+          schema:
+            type: string
+          required: true
+          description: The id of the order.
+        - in: query
+          name: start
+          description: UNIX Timestamp (1708271807) for starting range of aggregations
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: end
+          description: UNIX Timestamp (1708271807) for ending range of aggregations
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: granularity
+          description: The time slice value for each candle.  Choices include (ONE_MINUTE, FIVE_MINUTE, FIFTEEN_MINUTE,
+            THIRTY_MINUTE, ONE_HOUR, TWO_HOUR, SIX_HOUR, ONE_DAY)
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getProductCandlesResponse"
+  /api/v3/brokerage/products/{productId}/ticker:
+    get:
+      operationId: getMarketTrades
+      summary: Get snapshot information, by product ID, about the last trades (ticks), best bid/ask, and 24h volume.
+      parameters:
+        - in: path
+          name: productId
+          schema:
+            type: string
+          required: true
+          description: The id of the order.
+        - in: query
+          name: start
+          description: UNIX Timestamp (1708271807) for starting range of aggregations
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: end
+          description: UNIX Timestamp (1708271807) for ending range of aggregations
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getMarketTradesResponse"
+  /api/v3/brokerage/best_bid_ask:
+    get:
+      operationId: getBestBidOrAsk
+      summary: Get the best bid/ask for all products. A subset of all products can be returned instead by using the
+        product_ids input.
+      parameters:
+        - in: query
+          name: product_ids
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getBestBidOrAskResponse"
+  /api/v3/brokerage/product_book:
+    get:
+      operationId: getProductBook
+      summary: Get a list of bids/asks for a single product. The amount of detail shown can be customized with the limit
+        parameter.
+      parameters:
+        - in: query
+          name: product_id
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getProductBookResponse"
+  /api/v3/brokerage/convert/quote:
+    post:
+      operationId: createConvertQuote
+      summary: Create a convert quote with a specified source currency, target currency, and amount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createConvertQuoteRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/createConvertQuoteResponse"
+
 components:
   schemas:
+    createConvertQuoteResponse:
+      type: object
+      properties:
+        trade:
+          type: object
+          properties:
+            id:
+              type: string
+              description: The trade id, used to get and commit the trade.
+            status:
+              type: string
+              description: The current status of the trade.
+              enum:
+                - TRADE_STATUS_UNSPECIFIED
+                - TRADE_STATUS_CREATED
+                - TRADE_STATUS_STARTED
+                - TRADE_STATUS_COMPLETED
+                - TRADE_STATUS_CANCELED
+            user_entered_amount:
+              type: object
+              properties:
+                value:
+                  type: string
+                currency:
+                  type: string
+            amount:
+              type: object
+              properties:
+                value:
+                  type: string
+                currency:
+                  type: string
+            subtotal:
+              type: object
+              properties:
+                value:
+                  type: string
+                currency:
+                  type: string
+            total:
+              type: object
+              properties:
+                value:
+                  type: string
+                currency:
+                  type: string
+            fees:
+              type: array
+              items:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  amount:
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                      currency:
+                        type: string
+            label:
+              type: string
+            disclosure:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                link:
+                  type: object
+                  properties:
+                    text:
+                      type: string
+                    url:
+                      type: string
+            source:
+              type: object
+              properties:
+                type:
+                  type: string
+                network:
+                  type: string
+                ledger_account:
+                  type: object
+                  properties:
+                    account_id:
+                      type: string
+                    currency:
+                      type: string
+                    owner:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        uuid:
+                          type: string
+                        user_uuid:
+                          type: string
+                        type:
+                          type: string
+            target:
+              type: object
+              properties:
+                type:
+                  type: string
+                network:
+                  type: string
+                ledger_account:
+                  type: object
+                  properties:
+                    account_id:
+                      type: string
+                    currency:
+                      type: string
+                    owner:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        uuid:
+                          type: string
+                        user_uuid:
+                          type: string
+                        type:
+                          type: string
+            unit_price:
+              type: object
+              properties:
+                target_to_fiat:
+                  type: object
+                  properties:
+                    amount:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                          description: The numerical value of the amount.
+                        currency:
+                          type: string
+                          description: The ISO currency code for the amount.
+                    scale:
+                      type: integer
+                      description: The scale factor applied to the unit price. Indicates the precision or the number of decimals considered in the unit price.
+                target_to_source:
+                  type: object
+                  properties:
+                    amount:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                          description: The numerical value of the amount.
+                        currency:
+                          type: string
+                          description: The ISO currency code for the amount.
+                    scale:
+                      type: integer
+                      description: The scale factor applied to the unit price. Indicates the precision or the number of decimals considered in the unit price.
+                source_to_fiat:
+                  type: object
+                  properties:
+                    amount:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                          description: The numerical value of the amount.
+                        currency:
+                          type: string
+                          description: The ISO currency code for the amount.
+                    scale:
+                      type: integer
+                      description: The scale factor applied to the unit price. Indicates the precision or the number of decimals considered in the unit price.
+            user_warnings:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  link:
+                    type: object
+                    properties:
+                      text:
+                        type: string
+                      url:
+                        type: string
+            user_reference:
+              type: string
+            source_currency:
+              type: string
+            target_currency:
+              type: string
+            cancellation_reason:
+              type: object
+              properties:
+                message:
+                  type: string
+                code:
+                  type: string
+            error_code:
+              type: string
+            error_cta:
+              type: string
+            source_id:
+              type: string
+            target_id:
+              type: string
+            exchange_rate:
+              type: object
+              properties:
+                value:
+                  type: string
+                currency:
+                  type: string
+            tax_details:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  amount:
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                      currency:
+                        type: string
+            trade_incentive_info:
+              type: object
+              properties:
+                applied_incentive:
+                  type: boolean
+                user_incentive_id:
+                  type: string
+                code_val:
+                  type: string
+                ends_at:
+                  type: string
+                fee_without_incentive:
+                  type: object
+                  properties:
+                    value:
+                      type: string
+                    currency:
+                      type: string
+                redeemed:
+                  type: boolean
+            total_fee_without_tax:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                amount:
+                  type: object
+                  properties:
+                    value:
+                      type: string
+                    currency:
+                      type: string
+            fiat_denoted_total:
+              type: object
+              properties:
+                value:
+                  type: string
+                currency:
+                  type: string
+    createConvertQuoteRequest:
+        type: object
+        required:
+          - from_account
+          - to_account
+          - amount
+        properties:
+          from_account:
+            type: string
+            description: The currency of the account to convert from, e.g., USD.
+          to_account:
+            type: string
+            description: The currency of the account to convert to, e.g., USDC.
+          amount:
+            type: string
+            description: The amount to convert in the currency of the from_account.
+          trade_incentive_metadata:
+            type: object
+            properties:
+              user_incentive_id:
+                type: string
+                description: Optional identifier for a user incentive related to the trade.
+              code_val:
+                type: string
+                description: Optional code value associated with the trade incentive.
+    editOrderPreviewResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              edit_failure_reason:
+                type: string
+                description: Reason for edit failure.
+                enum:
+                  - UNKNOWN_EDIT_ORDER_FAILURE_REASON
+                  - COMMANDER_REJECTED_EDIT_ORDER
+                  - CANNOT_EDIT_TO_BELOW_FILLED_SIZE
+                  - ORDER_NOT_FOUND
+                  - CALLER_ID_MISMATCH
+                  - ONLY_LIMIT_ORDER_EDITS_SUPPORTED
+                  - INVALID_EDITED_SIZE
+                  - INVALID_EDITED_PRICE
+                  - INVALID_ORIGINAL_SIZE
+                  - INVALID_ORIGINAL_PRICE
+                  - EDIT_REQUEST_EQUAL_TO_ORIGINAL_REQUEST
+                  - ONLY_OPEN_ORDERS_CAN_BE_EDITED
+              preview_failure_reason:
+                type: string
+                description: Reason for preview failure.
+                enum:
+                  - UNKNOWN_PREVIEW_FAILURE_REASON
+                  - PREVIEW_MISSING_COMMISSION_RATE
+                  - PREVIEW_INVALID_SIDE
+                  - PREVIEW_INVALID_ORDER_CONFIG
+                  - PREVIEW_INVALID_PRODUCT_ID
+                  - PREVIEW_INVALID_SIZE_PRECISION
+                  - PREVIEW_INVALID_PRICE_PRECISION
+                  - PREVIEW_MISSING_PRODUCT_PRICE_BOOK
+                  - PREVIEW_INVALID_LEDGER_BALANCE
+                  - PREVIEW_INSUFFICIENT_LEDGER_BALANCE
+                  - PREVIEW_INVALID_LIMIT_PRICE_POST_ONLY
+                  - PREVIEW_INVALID_LIMIT_PRICE
+                  - PREVIEW_INVALID_NO_LIQUIDITY
+                  - PREVIEW_INSUFFICIENT_FUND
+                  - PREVIEW_INVALID_COMMISSION_CONFIGURATION
+                  - PREVIEW_INVALID_STOP_PRICE
+                  - PREVIEW_INVALID_BASE_SIZE_TOO_LARGE
+                  - PREVIEW_INVALID_BASE_SIZE_TOO_SMALL
+                  - PREVIEW_INVALID_QUOTE_SIZE_PRECISION
+                  - PREVIEW_INVALID_QUOTE_SIZE_TOO_LARGE
+                  - PREVIEW_INVALID_PRICE_TOO_LARGE
+                  - PREVIEW_INVALID_QUOTE_SIZE_TOO_SMALL
+                  - PREVIEW_INSUFFICIENT_FUNDS_FOR_FUTURES
+                  - PREVIEW_BREACHED_PRICE_LIMIT
+                  - PREVIEW_BREACHED_ACCOUNT_POSITION_LIMIT
+                  - PREVIEW_BREACHED_COMPANY_POSITION_LIMIT
+                  - PREVIEW_INVALID_MARGIN_HEALTH
+                  - PREVIEW_RISK_PROXY_FAILURE
+                  - PREVIEW_UNTRADABLE_FCM_ACCOUNT_STATUS
+        slippage:
+          type: string
+          description: Slippage amount.
+        order_total:
+          type: string
+          description: Total amount of the order.
+        commission_total:
+          type: string
+          description: Total commission for the order.
+        quote_size:
+          type: string
+          description: Size of the order in quote currency.
+        base_size:
+          type: string
+          description: Size of the order in base currency.
+        best_bid:
+          type: string
+          description: Best bid price.
+        best_ask:
+          type: string
+          description: Best ask price.
+        average_filled_price:
+          type: string
+          description: Average price at which the order was filled.
+    getProductBookResponse:
+      type: object
+      properties:
+        pricebook:
+          type: object
+          properties:
+            product_id:
+              type: string
+              description: Unique identifier for the product.
+            bids:
+              type: array
+              items:
+                type: object
+                properties:
+                  price:
+                    type: string
+                    description: Bid price for the product.
+                  size:
+                    type: string
+                    description: Size of the bid.
+            asks:
+              type: array
+              items:
+                type: object
+                properties:
+                  price:
+                    type: string
+                    description: Ask price for the product.
+                  size:
+                    type: string
+                    description: Size of the ask.
+            time:
+              type: string
+              description: Timestamp when the pricebook was recorded.
+    getBestBidOrAskResponse:
+      type: object
+      properties:
+        pricebooks:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: string
+                description: The product ID associated with this price book.
+              bids:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    price:
+                      type: string
+                      description: Bid price for the product.
+                    size:
+                      type: string
+                      description: Size of the bid.
+              asks:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    price:
+                      type: string
+                      description: Ask price for the product.
+                    size:
+                      type: string
+                      description: Size of the ask.
+              time:
+                type: string
+                description: Timestamp for when the price book was recorded.
+    getMarketTradesResponse:
+      type: object
+      properties:
+        trades:
+          type: array
+          items:
+            type: object
+            properties:
+              trade_id:
+                type: string
+                description: The ID of the trade that was placed.
+              product_id:
+                type: string
+                description: The trading pair.
+              price:
+                type: string
+                description: The price of the trade, in quote currency.
+              size:
+                type: string
+                description: The size of the trade, in base currency.
+              time:
+                type: string
+                description: The time of the trade.
+              side:
+                type: string
+                description: Possible values [BUY, SELL]
+              bid:
+                type: string
+                description: The best bid for the `product_id`, in quote currency.
+              ask:
+                type: string
+                description: The best ask for the `product_id`, in quote currency.
+              best_bid:
+                type: string
+                description: The best bid for the `product_id`, in quote currency. Duplicated information from the bid description,
+                  indicating this might be a more specific or highlighted bid value.
+              best_ask:
+                type: string
+                description: The best ask for the `product_id`, in quote currency. Similar to the ask description, indicating this might
+                  be a more specific or highlighted ask value.
+    getProductCandlesResponse:
+      type: object
+      description: Rates for a single product by product ID, grouped in bucket
+      properties:
+        candles:
+          type: array
+          items:
+            type: object
+            properties:
+              start:
+                description: Timestamp for bucket start time, in UNIX time.
+                type: string
+              end:
+                type: string
+              low:
+                type: string
+              high:
+                type: string
+              open:
+                type: string
+              close:
+                type: string
+              volume:
+                type: string
     getFillsResponse:
       type: object
       description: List of fills
@@ -490,7 +1173,7 @@ components:
           type: string
         side:
           type: string
-          summary: all caps BUY or SELL
+          description: choices are "BUY" or "SELL"
         order_configuration:
           type: object
           properties:
@@ -555,6 +1238,18 @@ components:
           type: string
         limitPrice:
           type: string
+    editOrderRequest:
+      type: object
+      properties:
+        order_id:
+          type: string
+          summary: ID of order to edit.
+        price:
+          summary: New price for order.
+          type: string
+        size:
+          type: string
+          summary: New size for order
     getOrdersResponse:
       type: object
       properties:
@@ -567,7 +1262,6 @@ components:
                 type: integer
               product_id:
                 type: integer
-
     getOrderResponse:
       type: object
       summary: Get a single order by order ID.
@@ -608,7 +1302,7 @@ components:
                     limit_price:
                       type: string
                     end_time:
-                      type: string # Assuming RFC3339 Timestamp format
+                      type: string
                     post_only:
                       type: boolean
                 stop_limit_stop_limit_gtc:
@@ -632,7 +1326,7 @@ components:
                     stop_price:
                       type: string
                     end_time:
-                      type: string # Assuming RFC3339 Timestamp format
+                      type: string
                     stop_direction:
                       type: string
                     side:
@@ -698,7 +1392,6 @@ components:
                             type: string
                           replace_accept_timestamp:
                             type: string
-
     batchCancelOrderRequest:
       type: object
       properties:
@@ -706,4 +1399,5 @@ components:
           type: array
           items:
             type: string
+
 
